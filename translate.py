@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+import sys
+from os import listdir
+from os.path import abspath, isfile
+from requests import post
+
+SENTENCE_DELIMETERS = ['.', '!', '?']
+MAX_SIZE = 4800
+
+def translate(entry):
+    body = {
+        'text': entry,
+        'gfrom': 'ru',
+        'gto': 'uz',
+        'key': '2956684590ru85'
+    }
+    result = post('https://www.webtran.ru/gtranslate/', data=body)
+    return result.text
+
+def split_to_sentences(text):
+    sentences = []
+    sentence = ''
+    text = text.replace('\n', ' ')
+    text = text.replace('...', '.')
+    for ch in text:
+        if ch in SENTENCE_DELIMETERS:
+            sentences.append((sentence + ch).strip())
+            sentence = ''
+        else:
+            sentence += ch
+    return sentences
+
+def split_to_sentence_chunks(sentences, max_size):
+    result = []
+    chunk = []
+    for sentence in sentences:
+        if sum([len(sent) for sent in chunk]) + len(sentence) < max_size:
+            chunk.append(sentence)
+        elif len(sentence) > max_size:
+            print('Long sentence found')
+            pass
+        else:
+            result.append(''.join(chunk))
+            chunk = []
+    if chunk != []:
+        result.append(''.join(chunk))
+    return result
+
+
+# def splitkeepsep(s, sep): return reduce(lambda acc, elem: acc[:-1] + [acc[-1] + elem] if elem == sep else acc + [elem], re.split("(%s)" % re.escape(sep), s), [])
+
+
+# if __name__ == '__main__':
+#     filenames = [entry for entry in listdir(INPUT_DIR) if isfile('/'.join((abspath(INPUT_DIR), entry)))]
+#     for filename in filenames:
+#         src_path = '/'.join((abspath(INPUT_DIR), filename))
+#         dest_path = '/'.join((abspath(OUTPUT_DIR), filename))
+#         translation = ''
+#         filetext = ''
+
+#         print('[INFO]: Processing file ' + filename + '. . .')
+#         print('[INFO]: in : ' + src_path)
+#         print('[INFO]: out: ' + dest_path)
+#         with open(src_path, 'r') as fin:
+#             filetext = fin.read().replace('\n', ' ')
+
+#         for chunk in split_to_sentence_chunks(filetext, MAX_SIZE):
+#             translation += ' '
+#             translation += translate(chunk).replace('\n', ' ')
+
+#         with open(dest_path, 'w') as fout:
+#             fout.write(translation)
+#         print('[INFO]: Done with ' + filename)
+
+if __name__ == "__main__":
+    sentences = []
+    with open('dataset/norm.txt', 'r') as fin:
+        sentences = fin.readlines()
+
+    with open('dataset/dataset1.txt', 'w') as fout:
+        for i, chunk in enumerate(split_to_sentence_chunks(sentences, MAX_SIZE)):
+            fout.write(translate(chunk))
+            print(f'[Done] chunk {i}')
