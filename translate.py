@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
+import re
 
-import sys
-from os import listdir
-from os.path import abspath, isfile
 from requests import post
 
-SENTENCE_DELIMETERS = ['.', '!', '?']
 MAX_SIZE = 4800
 
 def translate(entry):
@@ -18,18 +15,6 @@ def translate(entry):
     result = post('https://www.webtran.ru/gtranslate/', data=body)
     return result.text
 
-def split_to_sentences(text):
-    sentences = []
-    sentence = ''
-    text = text.replace('\n', ' ')
-    text = text.replace('...', '.')
-    for ch in text:
-        if ch in SENTENCE_DELIMETERS:
-            sentences.append((sentence + ch).strip())
-            sentence = ''
-        else:
-            sentence += ch
-    return sentences
 
 def split_to_sentence_chunks(sentences, max_size):
     result = []

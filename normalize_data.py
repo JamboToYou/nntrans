@@ -1,53 +1,32 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import re
+import sys
 
 INPUT_DIR = sys.argv[1]
 # OUTPUT_DIR = sys.argv[2]
 
-SEPS = ['.', '!', '?']
+SENTENCE_REGEXP = r"(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)"
+
 
 def split_to_sentences(text):
-    sentences = []
-    sentence = ''
-    first_sep = ''
-    seps_row = False
-    for ch in text:
-        if ch in SEPS:
-            if seps_row:
-                pass
-            else:
-                first_sep = ch
-                seps_row = True
-        elif seps_row:
-            seps_row = False
-            sentences.append((sentence + first_sep).strip())
-            sentence = ch
-        else:
-            sentence += ch
-    sentences.append(sentence)
-    return sentences
+    return re.split(SENTENCE_REGEXP, text)
+
 
 if __name__ == '__main__':
     filenames = os.listdir(INPUT_DIR)
-    with open('dataset/norm.txt', 'a') as fout:
+    with open('dataset/splitted_by_regexp.txt', 'a') as fout:
         for filename in filenames:
-            filetext = ''
+            with open(f'{INPUT_DIR}/{filename}', 'r') as file:
+                # with open('dataset/unnorm.txt', 'r') as file:
+                filetext = file.read()
 
-            with open(f'{INPUT_DIR}/{filename}', 'r') as fin:
-            # with open('dataset/unnorm.txt', 'r') as fin:
-                filetext = fin.read()
+            filetext = filetext.replace('\n', ' ')
+            filetext = filetext.replace('\t', ' ')
 
-            # normalize sentence separators
-            # filetext = re.sub(r'(\.|\?|\!|\n|\t| )+', r'\1', filetext)
-            # remove newlines and tabulations
-            filetext = filetext.replace('\n',' ')
-            filetext = filetext.replace('\t',' ')
-
-            filetext = '\n'.join([sent for sent in split_to_sentences(filetext) if len(sent) > 20])
-            # print(filetext)
+            filetext = '\n'.join([sent for sent in split_to_sentences(filetext)])
+            print(filetext)
 
             fout.write(filetext)
             # break
