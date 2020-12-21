@@ -80,5 +80,14 @@ if __name__ == "__main__":
 
     with open('dataset/dataset1.txt', 'w') as fout:
         for i, chunk in enumerate(split_to_sentence_chunks(sentences, MAX_SIZE)):
-            fout.write(translate(chunk))
+            translation = translate(chunk)
+            sents1 = chunk.split('\n')
+            sents2 = translation.split('\n')
+            if len(sents1) == len(sents2):
+                print('eq')
+                fout.writelines(['\t'.join(s) for s in zip((sents1, sents2))])
+            else:
+                print(f'not eq: {len(sents1)} - {len(sents2)}')
+                # print(f'[] {chunk} - {translation}')
+            # fout.write()
             print(f'[Done] chunk {i}')
